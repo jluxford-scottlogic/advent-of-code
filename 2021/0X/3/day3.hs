@@ -50,10 +50,10 @@ runOnInput :: (a -> b) ->  IO (Either ParseError a) -> IO (Either ParseError b)
 runOnInput = fmap . fmap
 
 parsedValue :: IO (Either ParseError [[Int]])
-parsedValue = parseFromFile day4Parser "C:/Dev/advent-of-code/2021/day3input.txt"
+parsedValue = parseFromFile day4Parser "day3input.txt"
 
 parsedTest :: IO (Either ParseError [[Int]])
-parsedTest = parseFromFile day4Parser "C:/Dev/advent-of-code/2021/day3Testinput.txt"
+parsedTest = parseFromFile day4Parser "day3Testinput.txt"
 
 bitParser :: Parser Int
 bitParser = read . (:[]) <$> digit

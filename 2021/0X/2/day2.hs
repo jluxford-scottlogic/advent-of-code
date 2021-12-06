@@ -38,10 +38,10 @@ runOnInput :: (a -> b) ->  IO (Either ParseError a) -> IO (Either ParseError b)
 runOnInput = fmap . fmap
 
 parsedValue :: IO (Either ParseError [Command])
-parsedValue = parseFromFile day2Parser "C:/Dev/advent-of-code/2021/day2input.txt"
+parsedValue = parseFromFile day2Parser "day2input.txt"
 
 parsedTest :: IO (Either ParseError [Command])
-parsedTest = parseFromFile day2Parser "C:/Dev/advent-of-code/2021/day2Testinput.txt"
+parsedTest = parseFromFile day2Parser "day2Testinput.txt"
 
 intParser :: Parser Int
 intParser = read <$> some digit <* many space

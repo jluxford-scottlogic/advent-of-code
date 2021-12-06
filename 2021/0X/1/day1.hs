@@ -20,7 +20,7 @@ runOnInput :: (a -> b) ->  IO (Either ParseError a) -> IO (Either ParseError b)
 runOnInput = fmap . fmap
 
 parsedValue :: IO (Either ParseError [Int])
-parsedValue = parseFromFile intListParser "C:/Dev/advent-of-code/2021/day1Input.txt"
+parsedValue = parseFromFile intListParser "day1Input.txt"
 
 intListParser :: Parser [Int]
 intListParser = some (read <$> some digit <* many space)
