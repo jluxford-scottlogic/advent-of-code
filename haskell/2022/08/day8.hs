@@ -1,56 +1,63 @@
 import Text.ParserCombinators.Parsec
 import Control.Applicative (some)
+import Data.List (transpose)
 
 type ParsedType = [[Integer]]
 
-appBoth :: (a -> a) -> (a, a) -> (a, a)
-appBoth f (a,b) = (f a, f b)
+--             (Height,  Visible)
+type Trees1 = [[(Integer, Bool)]]
 
-splitForCon :: [[Integer]] -> [([Integer], [Integer])]
-splitForCon = fmap halveList
+setBase1 :: ParsedType -> Trees1
+setBase1 = fmap (fmap (\a -> (a, False)))
 
-halveList :: [Integer] -> ([Integer], [Integer])
-halveList ks = (take midPoint ks, reverse (drop midPoint ks)) where
-    midPoint = div (length ks) 2
+--              (Height,  Scenic Score)
+type Trees2 = [[(Integer, Integer)]]
 
-addNegOneBorder :: [([Integer], [Integer])] -> [([Integer], [Integer])]
-addNegOneBorder ks = (negOnes :) . reverse . (negOnes :) . reverse $ addLR where 
-    addLR = fmap (appBoth ((-1):)) ks
-    negOnes = halveList (take (length ks + 2) [-1,-1..])
+setBase2 :: ParsedType -> Trees2
+setBase2 = fmap (fmap (\a -> (a, 1)))
 
-findVisible :: [([Integer], [Integer])] -> Integer
-findVisible (k:[]) = 0
-findVisible (k:ks) = (zipWithPairs ) (init lowerVisible) ++  where
-    ((lt,rt):lowerVisible) = findVisible (fmap (appBoth (chooseOnTrue (>=))) ks')
-    ((lb,rb):_) = reverse (init lowerVisible)
-    (topL, topR) = appBoth tail k
-    (botL, botR) = appBoth tail (last ks)
-    leftF = fmap (head . fst) ks
-    rightF = fmap (head . snd) ks
+checkVisibleMax :: Integer -> [(Integer, Bool)] -> [(Integer, Bool)]
+checkVisibleMax _ [] = []
+checkVisibleMax n ((h, b):hs) | h > n = (h, True) : (checkVisibleMax h hs)
+                              | otherwise = (h, b) : (checkVisibleMax n hs)
 
-fVisible :: [[(Integer, Integer)]] -> Integer
-fVisible xss = where
-    (t, b) = appBoth mid (droppedMid xss)
-    l = mid (fmap head xss)
-    r = mid (fmap last xss)
-    c = mid (fmap mid xss)
-    rows = zipWith (,,,) (zipWith max l r) (zipWith (,,) c l r)
+checkVisible :: [(Integer, Bool)] -> [(Integer, Bool)]
+checkVisible [] = []
+checkVisible ((h, b):hs) = (h, True) : checkVisibleMax h hs
 
-adjustTB :: [(Integer, [((Integer, Integer), (Integer, Integer), (Integer, Integer))])] -> [(Integer, Integer)]
-adjustTB ((m,xs):xss) = 
+doAllDirections :: ([(Integer, a)] -> [(Integer, a)]) -> [[(Integer, a)]] -> [[(Integer, a)]]
+doAllDirections f ms = dir4 where
+    dir1 = fmap f ms
+    dir2 = fmap (f . reverse) dir1
+    dir3 = fmap f (transpose dir2)
+    dir4 = fmap (f . reverse) dir3
 
-droppedMid :: [a] -> (a, a)
-droppedMid (x:xs) = (x, last xs)
+sumAll :: [[(Integer, Bool)]] -> Integer
+sumAll = sum . (fmap (foldr sumIfTrue 0)) where
+    sumIfTrue :: (a, Bool) -> Integer -> Integer
+    sumIfTrue (_, True) n = n + 1
+    sumIfTrue (_, False) n = n
 
-mid :: [a] -> [a]
-mid [] = []
-mid (x:xs) = init xs
+stage1 :: [[Integer]] -> Integer
+stage1 = sumAll . (doAllDirections checkVisible) . setBase1
 
-chooseOnTrue :: (a -> a -> Bool) -> [a] -> [a]
-chooseOnTrue (a:b:as) | f a b = a:as
-                      | f b a = b:as
-                      | otherwise = as
-chooseOnTrue as = as
+distanceIntoList :: [Integer] -> Integer -> Integer
+distanceIntoList [] _ = 0
+distanceIntoList (n : ns) h | h > n = 1 + distanceIntoList ns h
+                            | otherwise = 1
+
+scenicMultList :: [Integer] -> [(Integer, Integer)] -> [(Integer, Integer)]
+scenicMultList _ [] = []
+scenicMultList ns ((h, s) : hs) = (h, s * (distanceIntoList ns h)) : scenicMultList (h:ns) hs
+
+scenicMult :: [(Integer, Integer)] -> [(Integer, Integer)]
+scenicMult ((h, s): hs) = (h, 0) : (scenicMultList [h] hs)
+
+maxAll :: [[(Integer, Integer)]] -> Integer
+maxAll = maximum . (fmap maximum) . (fmap (fmap snd))
+
+stage2 :: [[Integer]] -> Integer
+stage2 = maxAll . (doAllDirections scenicMult) . setBase2
 
 runOnInput :: (a -> b) ->  IO (Either ParseError a) -> IO (Either ParseError b)
 runOnInput = fmap . fmap
