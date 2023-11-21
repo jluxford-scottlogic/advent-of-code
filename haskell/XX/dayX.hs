@@ -1,4 +1,5 @@
-import Text.ParserCombinators.Parsec
+import Text.Parsec.ByteString
+import Text.Parsec
 import Control.Applicative (some)
 
 type ParsedType = ()
@@ -17,3 +18,6 @@ parsedInput = parseFromFile usedParser "input.txt"
 
 usedParser :: Parser ParsedType
 usedParser = undefined
+
+parseNum :: Parser Integer
+parseNum = read <$> (some (oneOf ('-':['0'..'9'])))
