@@ -6,7 +6,7 @@ type ParsedType = [(Integer, [Integer])]
 
 checkThrough :: [(Integer -> Integer -> Integer)] -> (Integer, [Integer]) -> Bool
 checkThrough fs (x, [y]) = x == y
-checkThrough fs (x, y:z:ys) = or [checkThrough fs (x, f y z : ys) | f <- fs]
+checkThrough fs (x, y:z:ys) = y <= x && or [checkThrough fs (x, f y z : ys) | f <- fs]
 
 stage1 :: ParsedType -> Integer
 stage1 = sum . fmap fst . filter (checkThrough [(+), (*)])
