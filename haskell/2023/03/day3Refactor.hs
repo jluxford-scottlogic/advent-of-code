@@ -1,5 +1,4 @@
-import Text.Parsec.ByteString
-import Text.Parsec
+import Text.ParserCombinators.Parsec
 import Control.Applicative (some)
 import Data.List (elem)
 
